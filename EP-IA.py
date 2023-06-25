@@ -77,8 +77,8 @@ for num_camadas in lista_num_camadas:
             test_X = train_images[test]
             model = criar_modelo_mlp(num_neuronios, num_camadas)
             model.fit(train_X, train_labels[train], epochs=5, batch_size=64, verbose=2)
-            test_loss, test_acc = model.evaluate(test_X, train_labels[test], verbose=2)
-            acc_per_fold.append(test_acc * 100)
+            train_loss, train_acc = model.evaluate(train_X, train_labels[train], verbose=2)
+            acc_per_fold.append(train_acc * 100)
             fold_no = fold_no + 1
 
         media_acc_camada_neuronio = sum(acc_per_fold)/len(acc_per_fold)
@@ -137,8 +137,8 @@ for taxa_regularizacao in taxas_regularizacao:
             test_X = train_images[test]
             model = criar_modelo_mlp_regularizacao(melhor_num_neuronio, melhor_num_camada, taxa_regularizacao)
             model.fit(train_X, train_labels[train], epochs=5, batch_size=64, verbose=2)
-            test_loss, test_acc = model.evaluate(test_X, train_labels[test], verbose=2)
-            acc_per_fold.append(test_acc * 100)
+            train_loss, train_acc = model.evaluate(train_X, train_labels[train], verbose=2)
+            acc_per_fold.append(train_acc * 100)
             fold_no = fold_no + 1
 
         media_acc_regularizacao = sum(acc_per_fold)/len(acc_per_fold)
@@ -194,8 +194,8 @@ for taxa_dropout in taxas_dropout:
             test_X = train_images[test]
             model = criar_modelo_mlp_dropout(melhor_num_neuronio, melhor_num_camada, melhor_taxa_regularizacao, taxa_dropout)
             model.fit(train_X, train_labels[train], epochs=5, batch_size=64, verbose=2)
-            test_loss, test_acc = model.evaluate(test_X, train_labels[test], verbose=2)
-            acc_per_fold.append(test_acc * 100)
+            train_loss, train_acc = model.evaluate(train_X, train_labels[train], verbose=2)
+            acc_per_fold.append(train_acc * 100)
             fold_no = fold_no + 1
 
         media_acc_dropout = sum(acc_per_fold)/len(acc_per_fold)
@@ -246,8 +246,8 @@ for train, test in cv.split(train_images, train_labels): #pra cada fold
 
     model.fit(augmented_train_X, epochs=5, validation_data=(test_X, test_y), verbose=2)
 
-    test_loss, test_acc = model.evaluate(test_X, train_labels[test], verbose=2)
-    acc_per_fold.append(test_acc * 100)
+    train_loss, train_acc = model.evaluate(train_X, train_labels[train], verbose=2)
+    acc_per_fold.append(train_acc * 100)
     fold_no = fold_no + 1
 
 media_acc_dataaug = sum(acc_per_fold)/len(acc_per_fold)
@@ -255,8 +255,17 @@ media_acc_dataaug = sum(acc_per_fold)/len(acc_per_fold)
 dct_dataaug.update({"acuracia": media_acc_dataaug})
 
 print(f"Média acurácia dos 5 folds com data augmentation:", media_acc_dataaug)
-print(f"Essa acurácia significa que o modelo usando {melhor_num_camada} camada(s) oculta, com {melhor_num_neuronio} neurônios, com {melhor_taxa_regularizacao} de taxa de regularização L2, {taxa_dropout} de dropout, com Data Augmentation e usando a função ReLu para os neurônios das camadas ocultas e SoftMax para a saída é capaz de classificar corretamente em média {round(media_acc_dataaug, 1)}% das imagens")
+print(f"Essa acurácia significa que o modelo usando {melhor_num_camada} camada(s) oculta, com {melhor_num_neuronio} neurônios, com {melhor_taxa_regularizacao} de taxa de regularização L2, {melhor_taxa_dropout} de dropout, com Data Augmentation e usando a função ReLu para os neurônios das camadas ocultas e SoftMax para a saída é capaz de classificar corretamente em média {round(media_acc_dataaug, 1)}% das imagens")
 print(f"Portanto, possui em média {round(media_acc_dataaug, 1)} de acurácia.")
+
+if media_acc_dataaug > melhor_acc:
+    test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
+    print(f"Considerando a melhor arquitetura da MLP encontrada, usando {melhor_num_camada} camada(s) oculta, com {melhor_num_neuronio} neurônios, com {melhor_taxa_regularizacao} de taxa de regularização L2, {melhor_taxa_dropout} de dropout e com o Data Augmentation, o valor da Acurácia no conjunto de dados de teste é {test_acc*100}%")
+else:
+    model = criar_modelo_mlp_dropout(melhor_num_neuronio, melhor_num_camada, melhor_taxa_regularizacao, melhor_taxa_dropout)
+    model.fit(train_images, train_labels, epochs=5, batch_size = 64)
+    test_loss, test_acc = model.evaluate(test_images, test_labels)
+    print(f"Considerando a melhor arquitetura da MLP encontrada, usando {melhor_num_camada} camada(s) oculta, com {melhor_num_neuronio} neurônios, com {melhor_taxa_regularizacao} de taxa de regularização L2, {melhor_taxa_dropout} de dropout e sem usar o Data Augmentation, o valor da Acurácia no conjunto de dados de teste é {test_acc*100}%")
 
 
 d = {'acuracia':[dct_camada_neuronio[str(melhor_num_camada)+"_"+str(melhor_num_neuronio)]['acuracia'], dct_taxa_regularizacao[str(melhor_taxa_regularizacao)]['acuracia'], dct_taxa_dropout[str(melhor_taxa_dropout)]['acuracia'], dct_dataaug['acuracia']]}
@@ -266,7 +275,7 @@ dfFinal = pd.DataFrame(data=d, index=['camadas e neurônios','taxa regularizaç�
 plt.cla()
 plt.figure(figsize=(10,10)) 
 plt.plot(dfFinal, 'b', marker='.', label='Acurácia', linewidth=3, markersize=12)
-titulo = "Mudança na Acurácia após cada modificação"
+titulo = "Mudança na Acurácia nos dados de treinamento após cada modificação"
 plt.title(titulo)
 plt.legend(loc='upper left')
 plt.savefig(titulo+".png", format='png', dpi=300, facecolor='white', bbox_inches='tight')
