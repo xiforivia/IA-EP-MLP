@@ -150,7 +150,7 @@ for taxa_regularizacao in taxas_regularizacao:
         if media_acc_regularizacao > melhor_acc:
             melhor_acc = media_acc_regularizacao
             melhor_taxa_regularizacao = taxa_regularizacao
-print(f"Portanto, a melhor taxa de regularização L2 é {taxa_regularizacao}, que possui {round(melhor_acc, 1)} de acurácia.")
+print(f"Portanto, a melhor taxa de regularização L2 é {melhor_taxa_regularizacao}, que possui {round(melhor_acc, 1)} de acurácia.")
 dfTaxaRegularizacao = pd.DataFrame(dct_taxa_regularizacao).T
 titulo = "Acurácia de cada taxa de regularização L2"
 criar_grafico(dfTaxaRegularizacao, titulo)

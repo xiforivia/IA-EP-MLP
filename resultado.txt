@@ -433,7 +433,7 @@ Epoch 5/5
 1500/1500 - 3s - loss: 0.8448 - accuracy: 0.7453 - 3s/epoch - 2ms/step
 Média acurácia dos 5 folds com 0.1 de taxa de regularização L2: 76.32916569709778
 Essa acurácia significa que o modelo usando 1 camada(s) oculta, com 100 neurônios, com 0.1 de taxa de regularização L2 e usando a função ReLu para os neurônios das camadas ocultas e SoftMax para a saída é capaz de classificar corretamente em média 76.3% das imagens
-Portanto, a melhor taxa de regularização L2 é 0.1, que possui 87.2 de acurácia.
+Portanto, a melhor taxa de regularização L2 é 0.001, que possui 87.2 de acurácia.
 Treinando fold 1, com 1 camada(s) oculta, com 100 neurônios, 0.001 de taxa de regularização L2 e 0.2 de dropout
 Epoch 1/5
 750/750 - 4s - loss: 0.7352 - accuracy: 0.7855 - 4s/epoch - 5ms/step
